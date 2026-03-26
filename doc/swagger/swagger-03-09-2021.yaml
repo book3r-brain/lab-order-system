@@ -1,7 +1,7 @@
 swagger: '2.0'
 info:
   version: 0.0.4
-  title: Notch Health D2C 
+  title: Lab Orders System D2C 
   description: >
     ## Overview
 
@@ -49,7 +49,7 @@ info:
     15) A service to update a specific Shopify order in Shopify
 
 
-    In order to differentiate a Notch order from all other orders NOTCH-{Shopify Order Number} is stored in the Test Kit's requestor field. When passing data to the test kit order only include the Shopify Order Number in the requester field for inserting and updating.
+    In order to differentiate a Lab Orders System order from all other orders NOTCH-{Shopify Order Number} is stored in the Test Kit's requestor field. When passing data to the test kit order only include the Shopify Order Number in the requester field for inserting and updating.
 
 
     Same thing somewhat applies to a lab-order, except the field used is the diagnosis field, but instead of passing a Shopify Order Number the caller will had to supply a unique key that they generate and place the key in the diagnosis field.
@@ -143,7 +143,7 @@ info:
     - Payload is simple, human readable
 
     - Resource fully documented?
-host: "notchapi-service-ovvelzitca-uw.a.run.app"
+host: "localhost:8080"
 basePath: / 
 
 schemes:

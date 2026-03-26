@@ -1,7 +1,7 @@
 # openapi2-run.yaml
 swagger: '2.0'
 info:
-  title: Notch data api
+  title: Lab Orders System data api
   description: "This specification defines the necessary resources needed to access customer information."
   version: 0.0.5
 schemes:

@@ -37,7 +37,7 @@ Eight services exist to that act as a broker of information between the lab syst
 - A service to delete a lab order in LIS (currently private)
 
 
-**Note: In order to differentiate a Notch order from all other orders NOTCH-{Shopify Order Number} is stored in the Test Kit's requestor field. When passing data to the test kit order only include the Shopify Order Number in the requester field for inserting and updating.**
+**Note: In order to differentiate a Lab Orders System order from all other orders NOTCH-{Shopify Order Number} is stored in the Test Kit's requestor field. When passing data to the test kit order only include the Shopify Order Number in the requester field for inserting and updating.**
 
 **Same thing somewhat applies to a lab-order, except the field used is the diagnosis field, but instead of passing a Shopify Order Number the caller will had to supply a unique key that they generate and place the key in the diagnosis field.** 
 
@@ -101,7 +101,7 @@ Eight services exist to that act as a broker of information between the lab syst
     }
 
 
-### Get Notch Test Kit from LIS
+### Get Lab Orders System Test Kit from LIS
 
 **Input**
 
@@ -135,7 +135,7 @@ Eight services exist to that act as a broker of information between the lab syst
         }
     ]
 
-### Update Notch Test Kit Info in LIS   
+### Update Lab Orders System Test Kit Info in LIS   
 
 **Input**
 
@@ -172,7 +172,7 @@ Eight services exist to that act as a broker of information between the lab syst
         "Rows-affected": 1
     }
 
-### Delete Notch Test Kit from LIS
+### Delete Lab Orders System Test Kit from LIS
 
 **Input**
 
@@ -953,7 +953,7 @@ Eight services exist to that act as a broker of information between the lab syst
         "cart_token": "d6e3de7d0be52528cea501847e8d16e9",
         "refunds": [],
         "closed_at": null,
-        "order_status_url": "https://notch.health/53169258657/orders/e697d35cbcb9540b23e3e3bb0ec2415b/authenticate?key=715422b728c3510ff2f4611f3c1307f8",
+        "order_status_url": "https://lab-order-system.health/53169258657/orders/e697d35cbcb9540b23e3e3bb0ec2415b/authenticate?key=715422b728c3510ff2f4611f3c1307f8",
         "presentment_currency": "USD",
         "discount_applications": [],
         "total_line_items_price": "119.00",
@@ -976,12 +976,12 @@ Eight services exist to that act as a broker of information between the lab syst
             "address2": "",
             "phone": "(206) 247-1639"
         },
-        "referring_site": "https://notch.health/",
+        "referring_site": "https://lab-order-system.health/",
         "reference": null,
         "created_at": "2021-02-23T14:36:47-08:00",
         "buyer_accepts_marketing": true,
         "financial_status": "paid",
-        "contact_email": "jzambrano@notch.health",
+        "contact_email": "jzambrano@lab-order-system.health",
         "taxes_included": false,
         "original_total_duties_set": null,
         "total_discounts_set": {
@@ -1155,13 +1155,13 @@ Eight services exist to that act as a broker of information between the lab syst
                 "duties": [],
                 "fulfillment_status": null,
                 "quantity": 1,
-                "vendor": "NotchHealth",
+                "vendor": "Lab Orders SystemHealth",
                 "origin_location": {
                     "city": "Seattle",
                     "zip": "98122",
                     "province_code": "WA",
                     "id": 2670784774305,
-                    "name": "Notch Health",
+                    "name": "Lab Orders System",
                     "country_code": "US",
                     "address2": "Suite 200",
                     "address1": "300 East Pike Street"
@@ -1260,7 +1260,7 @@ Eight services exist to that act as a broker of information between the lab syst
         "browser_ip": "50.125.98.61",
         "total_discounts": "0.00",
         "token": "e697d35cbcb9540b23e3e3bb0ec2415b",
-        "email": "jzambrano@notch.health",
+        "email": "jzambrano@lab-order-system.health",
         "source_identifier": null,
         "number": 3,
         "name": "#1003",
@@ -1280,7 +1280,7 @@ Eight services exist to that act as a broker of information between the lab syst
             "tax_exempt": false,
             "tags": "",
             "admin_graphql_api_id": "gid://shopify/Customer/4616784183457",
-            "email": "jzambrano@notch.health",
+            "email": "jzambrano@lab-order-system.health",
             "phone": null,
             "created_at": "2021-02-17T11:46:39-08:00",
             "first_name": "Juan",
@@ -1334,7 +1334,7 @@ Eight services exist to that act as a broker of information between the lab syst
  **Body**
 
     {
-        "email": "jzambrano@notch.health"
+        "email": "jzambrano@lab-order-system.health"
     }   
 
 
@@ -1469,8 +1469,8 @@ Eight services exist to that act as a broker of information between the lab syst
             }
         },
         "test": true,
-        "email": "jzambrano@notch.health",
-        "contact_email": "jzambrano@notch.health",
+        "email": "jzambrano@lab-order-system.health",
+        "contact_email": "jzambrano@lab-order-system.health",
         "total_tip_received": "0.0",
         "processed_at": "2021-02-23T14:36:46-08:00",
         "reference": null,
@@ -1489,7 +1489,7 @@ Eight services exist to that act as a broker of information between the lab syst
         },
         "closed_at": null,
         "total_tax": "10.72",
-        "order_status_url": "https://notch.health/53169258657/orders/e697d35cbcb9540b23e3e3bb0ec2415b/authenticate?key=715422b728c3510ff2f4611f3c1307f8",
+        "order_status_url": "https://lab-order-system.health/53169258657/orders/e697d35cbcb9540b23e3e3bb0ec2415b/authenticate?key=715422b728c3510ff2f4611f3c1307f8",
         "confirmed": true,
         "note_attributes": [],
         "client_details": {
@@ -1531,7 +1531,7 @@ Eight services exist to that act as a broker of information between the lab syst
                 "requires_shipping": true,
                 "grams": 0,
                 "quantity": 1,
-                "vendor": "NotchHealth",
+                "vendor": "Lab Orders SystemHealth",
                 "total_discount_set": {
                     "shop_money": {
                         "amount": "0.00",
@@ -1583,7 +1583,7 @@ Eight services exist to that act as a broker of information between the lab syst
                     "zip": "98122",
                     "city": "Seattle",
                     "country_code": "US",
-                    "name": "Notch Health",
+                    "name": "Lab Orders System",
                     "id": 2670784774305,
                     "province_code": "WA",
                     "address1": "300 East Pike Street",
@@ -1665,7 +1665,7 @@ Eight services exist to that act as a broker of information between the lab syst
         },
         "updated_at": "2021-02-24T14:11:45-08:00",
         "customer_locale": "en",
-        "referring_site": "https://notch.health/",
+        "referring_site": "https://lab-order-system.health/",
         "tax_lines": [
             {
                 "rate": 0.025,
@@ -1734,7 +1734,7 @@ Eight services exist to that act as a broker of information between the lab syst
             "id": 4616784183457,
             "currency": "USD",
             "orders_count": 0,
-            "email": "jzambrano@notch.health",
+            "email": "jzambrano@lab-order-system.health",
             "accepts_marketing_updated_at": "2021-02-17T11:46:40-08:00",
             "tax_exempt": false,
             "state": "disabled",
@@ -1774,7 +1774,7 @@ The following checklist was used in the construction of the REST resources:
 - Uniform Resource Locators (RFC 1738)
 - HTTP Standards (rfc1945, rfc7230, rfc7231, rfc7232, rfc7233, rfc7234 and rfc7235)
 
-## Notch REST Design Guide
+## Lab Orders System REST Design Guide
 - Keep a simple URL structure - https://support.google.com/webmasters/answer/76329?hl=en
 - Use canonical URLs https://support.google.com/webmasters/answer/139066?hl=en
 
@@ -1981,7 +1981,7 @@ Since the project has a very short time and the current infrastruce is fragile, 
         console.log('hello-cloud-run', 'request received');
 
     const target = process.env.TARGET || 'Juan';
-    res.send(`Hello ${target} from Notch - Shopify Webhooks!`);
+    res.send(`Hello ${target} from Lab Orders System - Shopify Webhooks!`);
     });
 
     const port = process.env.PORT || 8080;
@@ -2079,7 +2079,7 @@ After creation there should be an endpoint generated, click the generated URL to
 
 The deploy command will look something like this.
 
-    gcloud run deploy notchwebhook-service --region=us-west1 --platform=managed --image=gcr.io/[google project name]/bitbucket.org/us-biotek/[container name]:d2461fa
+    gcloud run deploy lab-order-systemwebhook-service --region=us-west1 --platform=managed --image=gcr.io/[google project name]/bitbucket.org/us-biotek/[container name]:d2461fa
 
 On success add to the command to the cloudbuild.yaml file in the project.
 

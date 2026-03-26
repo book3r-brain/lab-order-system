@@ -1,7 +1,7 @@
 swagger: '2.0'
 info:
   version: 0.0.4
-  title: Notch Health D2C 
+  title: Lab Orders System D2C 
   description: >
     ## Overview
 
@@ -134,7 +134,7 @@ info:
     - Payload is simple, human readable
 
     - Resource fully documented?
-host: "notchapi-service-ovvelzitca-uw.a.run.app"
+host: "localhost:8080"
 basePath: / 
 
 schemes:

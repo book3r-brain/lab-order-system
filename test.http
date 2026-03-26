@@ -53,7 +53,7 @@ Content-Type: application/json
       "sku": "TEST-HORMONE-01",
       "quantity": 1,
       "price": "149.00",
-      "vendor": "NotchData Labs",
+      "vendor": "Lab Orders SystemData Labs",
       "requires_shipping": true,
       "taxable": false
     }
@@ -74,6 +74,9 @@ Content-Type: application/json
 
 ### GET /shopify-orders/token 
 GET {{base_url}}/shopify-orders/token HTTP/1.1
+
+### GET /api-docs (Swagger UI)
+GET {{base_url}}/api-docs/ HTTP/1.1
 
 ### Create Lab Order
 POST {{base_url}}/lab-orders/ HTTP/1.1

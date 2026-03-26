@@ -9,7 +9,7 @@ const Firestore = require('@google-cloud/firestore');
 /************ END For Testing *****************/
 
 const db = new Firestore({
-    projectId: "notchdata",
+    projectId: "lab-order-systemdata",
 });
 
 // Ignore undefined fields

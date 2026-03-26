@@ -1,10 +1,14 @@
 require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
+const swaggerUi = require('swagger-ui-express');
+const YAML = require('yamljs');
 
 const path = require('path');
 
 const app = express();
+
+const swaggerDocument = YAML.load(path.join(__dirname, '../doc/swagger/swagger-latest.yaml'));
 
 const testKitRoutes = require('./routes/test-kit-orders');
 const labOrderRoutes = require('./routes/lab-orders');
@@ -30,6 +34,8 @@ app.use('/customers', customerRoutes);
 app.use('/shopify-orders', shopifyOrderRoutes);
 
 app.use('/webhooks', webhookRoutes);
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.get('/', function (req, res) {
     res.sendFile(path.join(__dirname, '/public/welcome.html'));
