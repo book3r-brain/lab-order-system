@@ -1,0 +1,47 @@
+[
+  {
+    "id": "28723823",
+    "order-id": "3898238923",
+    "customer-id": "2783",
+    "prac-id": "13",
+    "order-taker": "asmith",
+    "requester": "",
+    "process-type": "",
+    "loc-pos": "",
+    "clinic-name": "Betty Hollow",
+    "address1": "3782 Love Drive",
+    "address2": "#1",
+    "city": "Chicago",
+    "state": "IL",
+    "other-state": "",
+    "zip": "60636",
+    "country": "USA",
+    "req-loc": "",
+    "ship-method": "FED",
+    "tracking-num": "29839283479382",
+    "status": "",
+    "comment": "",
+    "kit-id": ""
+  },
+  // For LIS
+  {
+    "prac-id": "15928",
+    "order-taker": "tshowers",
+    "requester": "w9e8r7w9e8w",
+    "process-type": "2",
+    "loc-pos": "0",
+    "clinic-name": "Jane Adams",
+    "address1": "9384 Love Dr",
+    "address2": "#103",
+    "city": "Woodinville",
+    "state": "WA",
+    "other-state": "",
+    "zip": "98072",
+    "country": "US",
+    "req-loc": "1",
+    "ship-method": "",
+    "tracking-num": "",
+    "status": "0",
+    "comment": ""
+  }
+]

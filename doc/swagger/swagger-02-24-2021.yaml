@@ -1,0 +1,660 @@
+swagger: '2.0'
+info:
+  version: 0.0.3
+  title: Notch Health D2C 
+  description: >
+    ## Overview
+
+    This specification defines the necessary resources needed to access a patient's information and the patient's test results.
+    
+    
+    A customer orders a test kit through a website, when the test kit order is received by the customer, they register each kit to a person who will take the test. When registering the kit, they will enter a test kit ID along with their name, date of birth and other personal information. 
+    
+    Upon submission of the kit ID, a lab order is created. Once the customer has administered the test, they mail back the kit to the lab.
+    
+    
+    The customer can track the kit to the lab, check the status or the results, update any personal information related to the lab order.
+    
+    
+    Eight services exist to that act as a broker of information between the lab system and the website.
+    
+    1) A service to create a kit order request
+    
+    2) A service to request the delivery status of a kit
+    
+    3) A service to update the kit order with kit IDs
+    
+    4) A service to create a lab order
+    
+    5) A service to get all lab orders for a customer
+    
+    6) A service to get a specific lab order (to check the status)
+    
+    7) A service to update a lab order
+    
+    8) A service to delete a lab order
+    
+    9) A service to check the existence of a lab order
+
+
+
+    ## Goal
+
+    This document describes a recommended REST resource URIs and datasets to expedite load and offer a developer-friendly interface. Currently, access to lab results is a internal process. Hence the goal is to; provide easy way for external sources to exhange test results, associate kits to patients, check test status, or initiate a lab test.
+
+
+
+    ## Approach
+
+    Further, the document also maps out a plan for supporting future REST resources that add value for developers. This framework reuses design and best practices. Aspects of REST design, such as the kinds of resources, are easily described by URLs. Other aspects are not described well by resources, such as invariants, functions, and objects maintained by an ensemble. The fact that some elements are not expressed well as resources makes a REST framework harder to design. A good REST design emphasizes data details at the expense of functions. A good REST framework concentrates on describing data objects retrieved via HTTP or any other protocol. Dataflow is de-emphasized, rather emphasis is placed on the communication between the client. Since a framework provides an abstraction, users of this REST framework should ignore the details of any algorithms and concentrate on designing and combining data elements. Abstraction is defined either by how to recognize resources or how to use resources. Additional REST resources act as placeholders to depict a future implementation path.
+    
+    
+
+    When initiating a new test, the name of the resource is given by the server. When the server assigns the name, use a POST verb. The server should return a status of 201 with a location header parameter of the value specifying the location of the resource. A benefit of allowing the server to assign the resource name is to avoid naming conflicts.
+    
+    
+    The GET HTTP verb is used to retrieve a representation of a resource i.e., the test results. The request contains no body but may contain headers. The GET method returns a collection or individual resource. The desired representation format is implicit or explicit (accept header given).
+    
+    An update to a resource occurs when one or more attributes of an existing resource require changes. Typically, changes use the HTTP verb PUT. However, there are times when a POST is used. Below are the conditions for which HTTP verb to use.
+    
+    
+    PUT - Send full resource representation in the entity body. In other words, replace not update.
+    
+    
+    POST – Subset of a resource's parameters requires updates. The full resource is not included in the entity body; however, the server needs to be aware of the partial update, and the resource needs to be different from any other operations (i.e. Create) that use the POST verb.
+    
+    
+    In either case, the full path to the resource must be specified in the URL. To reiterate, the path that points to the specific resource must be provided, a successful update should return an HTTP 204 with an empty entity-body. Any returned metadata is contained in the entity-headers. In some instances, there may be a need to return an entity-body. For example, if the values of any of the parameters in the response are different from what is specified in the request, the entity-body of the full resource is returned.
+    
+    
+    Use the HTTP verb DELETE when deleting a resource. For a successful deletion, an HTTP 204 status code is returned.
+    
+
+
+
+    ## References
+
+    The following checklist was used in the construction of the REST resources:
+
+    - Uniform Resource Locators (RFC 1738)
+
+    - HTTP Standards (rfc1945, rfc7230, rfc7231, rfc7232, rfc7233, rfc7234 and
+    rfc7235)
+
+    - US Biotek REST Design Guide
+
+    - Keep a simple URL structure
+    - https://support.google.com/webmasters/answer/76329?hl=en
+
+    - Use canonical URLs
+    https://support.google.com/webmasters/answer/139066?hl=en
+
+
+
+
+
+    ## Design Guidelines
+
+    The following checklist was used in the construction of the REST resources:
+
+    - No verbs in the URL resource definition
+
+    - Following the REST design pattern
+    /{plural-noun}/{ID}/{plural-noun}/{ID}...
+
+    - Resource-restrictive URI
+
+    - Ensuring REST resource is stateless
+
+    - Not using REST as function calls
+
+    - No abbreviations in the names (except for ID)
+
+    - Identifying the data entities and not focusing on functions
+
+    - Integration with other projects or application consideration
+
+    - Making sure REST resource can be controlled by the caller/client
+
+    - The REST resource name is a noun and easy to recognize
+
+    - The REST resource does not use spaces in the name
+
+    - The slash in the URI should express a parent-child relationship
+
+    - The REST resource only uses the query string when necessary
+
+    - The REST resource does not derive metadata from the URI
+
+    - The REST resource is client side cacheable
+
+    - The REST resource is explicitly using HTTP actions (PUT, POST, DELETE, GET,
+    HEAD)
+
+    - The response returns a request ID for troubleshooting purposes
+
+    - The resource is lowercase
+
+    - Payload is simple, human readable
+
+    - Resource fully documented?
+host: "notchapi-service-ovvelzitca-uw.a.run.app"
+basePath: / 
+
+schemes:
+  - https
+produces:
+  - application/json
+consumes:
+  - application/json
+paths:
+  '/test-kit-orders':
+    post:
+      tags:
+        - test-kit
+      summary: Create test kit order
+      operationId: testKitOrderPost
+      description: Create a test kit for patient/customer/practioner.
+      produces:
+        - application/json
+      parameters:
+        - name: test-kit
+          in: body
+          description: User events captured
+          required: true
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/test-kit'
+      responses:
+        '201':
+          description: test kit created
+          schema:
+            type: object
+            items:
+              $ref: '#/definitions/test-kit'
+        '204':
+          description: 'The server has fulfilled the request but does not need to return an entity-body, and might want to return updated meta information. The response MAY include new or updated meta information in the form of entity-headers, which if present SHOULD associate with the requested variant.'
+        '400':
+          description: The request could not be understood by the server due to malformed syntax. The client SHOULD NOT repeat the request without modifications.
+        '405':
+          description: The method specified in the Request-Line is not allowed for the resource identified by the Request-URI. The response MUST include an Allow header containing a list of valid methods for the requested resource.
+        '411':
+          description: The server refuses to accept the request without a defined Content-Length. The client MAY repeat the request if it adds a valid Content-Length header field containing the length of the message-body in the request message.
+        '413':
+          description: 'The server refuses to process a request because the requesting entity is larger than the server is willing or able to process. The server MAY close the connection to prevent the client from continuing the request. If the condition is temporary, the server SHOULD include a Retry- After header field to indicate that it is temporary and after what time the client MAY try again.'
+        '415':
+          description: The server refuses to service the request because the entity of the request is in a format not supported by the requested resource for the requested method.
+  '/test-kit-orders/{order-id}':
+    get:
+      tags:
+        - test-kit
+      description: Get test kit
+      produces:
+        - application/json
+      summary: Get the tracking information based on test kit id
+      operationId: testKitOrderGetByID
+      parameters:
+        - name: order-id
+          in: path
+          description: ID of test kit
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Test kit object
+          schema:
+            type: object
+            items:
+              $ref: '#/definitions/test-kit'
+        '400':
+          description: No information available
+        '405':
+          description: The method specified in the Request-Line is not allowed for the resource identified by the Request-URI. The response MUST include an Allow header containing a list of valid methods for the requested resource
+
+    post:
+      tags:
+        - test-kit
+      description: Update test kit with IDS
+      produces:
+        - application/json
+      summary: Update the test kit order with test kit id/s
+      operationId: testKitOrderUpdateByID
+      parameters:
+        - name: order-id
+          in: path
+          description: ID of test kit
+          required: true
+          type: string
+        - name: kit-id
+          in: body
+          description: Kit ID/s to be associated with kit order
+          required: true
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/test-kit'
+      responses:
+        '200':
+          description: Test kit object
+          schema:
+            type: object
+            items:
+              $ref: '#/definitions/test-kit'
+        '400':
+          description: No information available
+        '405':
+          description: The method specified in the Request-Line is not allowed for the resource identified by the Request-URI. The response MUST include an Allow header containing a list of valid methods for the requested resource          
+
+
+
+  '/lab-orders':
+    post:
+      tags:
+        - lab-order
+      summary: Create a lab order for the customer
+      operationId: labOrderPost
+      produces:
+        - application/json
+      description: Create lab order information for customer.
+      parameters:
+        - name: lab-order
+          in: body
+          description: User events captured
+          required: true
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/lab-order'
+      responses:
+        '200':
+          description: lab order object created 
+          schema:
+            type: object
+            items:
+              $ref: '#/definitions/lab-order'
+        '204':
+          description: 'The server has fulfilled the request but does not need to return an entity-body, and might want to return updated meta information. The response MAY include new or updated meta information in the form of entity-headers, which if present SHOULD associate with the requested variant.'
+        '400':
+          description: The request could not be understood by the server due to malformed syntax. The client SHOULD NOT repeat the request without modifications.
+        '405':
+          description: The method specified in the Request-Line is not allowed for the resource identified by the Request-URI. The response MUST include an Allow header containing a list of valid methods for the requested resource.
+        '411':
+          description: The server refuses to accept the request without a defined Content-Length. The client MAY repeat the request if it adds a valid Content-Length header field containing the length of the message-body in the request message.
+        '413':
+          description: 'The server refuses to process a request because the requesting entity is larger than the server is willing or able to process. The server MAY close the connection to prevent the client from continuing the request. If the condition is temporary, the server SHOULD include a Retry- After header field to indicate that it is temporary and after what time the client MAY try again.'
+        '415':
+          description: The server refuses to service the request because the entity of the request is in a format not supported by the requested resource for the requested method.
+    get:
+      tags:
+        - lab-order
+      summary: Get all lab orders for customer based on customer ID
+      operationId: labOrderGet
+      produces:
+        - application/json
+      description: Get all lab orders for customer  based on customer ID
+      parameters:
+        - name: customer-id
+          in: body
+          description: User events captured
+          required: true
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/lab-order'
+      responses:
+        '200':
+          description: lab order response object
+          schema:
+            type: object
+            items:
+              $ref: '#/definitions/lab-order'
+        '204':
+          description: 'The server has fulfilled the request but does not need to return an entity-body, and might want to return updated meta information. The response MAY include new or updated meta information in the form of entity-headers, which if present SHOULD associate with the requested variant.'
+        '400':
+          description: The request could not be understood by the server due to malformed syntax. The client SHOULD NOT repeat the request without modifications.
+        '405':
+          description: The method specified in the Request-Line is not allowed for the resource identified by the Request-URI. The response MUST include an Allow header containing a list of valid methods for the requested resource.
+        '411':
+          description: The server refuses to accept the request without a defined Content-Length. The client MAY repeat the request if it adds a valid Content-Length header field containing the length of the message-body in the request message.
+        '413':
+          description: 'The server refuses to process a request because the requesting entity is larger than the server is willing or able to process. The server MAY close the connection to prevent the client from continuing the request. If the condition is temporary, the server SHOULD include a Retry- After header field to indicate that it is temporary and after what time the client MAY try again.'
+        '415':
+          description: The server refuses to service the request because the entity of the request is in a format not supported by the requested resource for the requested method.
+  
+  '/lab-orders/{id}':
+    get:
+      tags:
+        - lab-order
+      description: Get a specified lab order based on order ID 
+      produces:
+        - application/json
+      summary: Get a specified lab order based on order ID
+      operationId: labOrderGetByID
+      parameters:
+        - name: id
+          in: path
+          description: ID of the lab order
+          required: true
+          type: string
+      responses:
+        '200':
+          description: delivery response object
+          schema:
+            type: object
+            items:
+              $ref: '#/definitions/lab-order'
+        '400':
+          description: No delivery information available
+        '405':
+          description: The method specified in the Request-Line is not allowed for the resource identified by the Request-URI. The response MUST include an Allow header containing a list of valid methods for the requested resource
+    put:
+      tags:
+        - lab-order
+      description: Update the lab order for a customer/practioner based on order ID
+      produces:
+        - application/json
+      summary: Update the lab order for a customer/practioner based on order ID
+      operationId: labOrderUpdateFullByID
+      parameters:
+        - name: id
+          in: path
+          description: ID of the lab order
+          required: true
+          type: string
+        - name: lab-order
+          in: body
+          description: User events captured
+          required: true
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/lab-order'
+      responses:
+        '200':
+          description: updated lab order
+          schema:
+            type: object
+            items:
+              $ref: '#/definitions/lab-order'
+        '204':
+          description: 'The server has fulfilled the request but does not need to return an entity-body, and might want to return updated meta information. The response MAY include new or updated meta information in the form of entity-headers, which if present SHOULD associate with the requested variant.'
+        '400':
+          description: The request could not be understood by the server due to malformed syntax. The client SHOULD NOT repeat the request without modifications.
+        '405':
+          description: The method specified in the Request-Line is not allowed for the resource identified by the Request-URI. The response MUST include an Allow header containing a list of valid methods for the requested resource.
+        '411':
+          description: The server refuses to accept the request without a defined Content-Length. The client MAY repeat the request if it adds a valid Content-Length header field containing the length of the message-body in the request message.
+        '413':
+          description: 'The server refuses to process a request because the requesting entity is larger than the server is willing or able to process. The server MAY close the connection to prevent the client from continuing the request. If the condition is temporary, the server SHOULD include a Retry- After header field to indicate that it is temporary and after what time the client MAY try again.'
+        '415':
+          description: The server refuses to service the request because the entity of the request is in a format not supported by the requested resource for the requested method.
+    delete:
+      tags:
+        - lab-order
+      description: Delete the lab order for a customer/practioner based on order ID
+      produces:
+        - application/json
+      summary: Delete the lab order based on order ID
+      operationId: labOrderDelete
+      parameters:
+        - name: id
+          in: path
+          description: ID of the lab order
+          required: true
+          type: string
+      responses:
+        '200':
+          description: deletion successful
+        '400':
+          description: No information available
+        '405':
+          description: The method specified in the Request-Line is not allowed for the resource identified by the Request-URI. The response MUST include an Allow header containing a list of valid methods for the requested resource
+    head:
+      tags:
+        - lab-order
+      description: Check for the existence of the lab order based on order ID
+      produces:
+        - application/json
+      summary: See if lab order exist based on order ID
+      operationId: labOrderHead
+      parameters:
+        - name: id
+          in: path
+          description: ID of the lab order
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Lab order exist
+        '400':
+          description: No information available
+        '405':
+          description: The method specified in the Request-Line is not allowed for the resource identified by the Request-URI. The response MUST include an Allow header containing a list of valid methods for the requested resource
+          
+          
+          
+definitions:
+  test-kit:
+    type: object
+    required:
+      - order-id
+    properties:
+      id:
+        type: string
+        example: "28723823"
+      order-id:
+        type: string
+        example: "3898238923"
+      customer-id:
+        type: string
+        example: "2783"
+      clinic-pract-id:
+        type: string
+        example: "Marshall Masters"
+      order-date:
+        type: string
+      order-taken-by:
+        type: string
+        example: "asmith"
+      name-of-requester:
+        type: string
+        example: "sandra"
+      shipping-name:
+        type: string
+        example: "Betty Hollow"
+      shipping-location-address:
+        type: string
+        example: "3782 Love Drive #1"
+      shipping-location-city:
+        type: string
+        example: "Chicago"
+      shipping-location-state:
+        type: string
+        example: "IL"
+      shipping-location-zip:
+        type: string
+        example: "60636"
+      shipping-location-country:
+        type: string
+        example: "USA"
+      kit-type:
+        type: string
+        example: "Pamphlet"
+      supplies-type:
+        type: string
+        example: "Food Allergy"
+      processing-status:
+        type: string
+        example: "STANDARD"
+      current-status:
+        type: string
+        example: "SHIPPED"
+      verify-entry:
+        type: boolean
+        example: true
+      comment:
+        type: string
+        example: "Celiac Pamphlet - 5"
+      phone-number:
+        type: string
+        example: "425.777.9311"
+      kit-id:
+        type: string
+        example: "3898238923"
+      shipping-method:
+        type: string
+        example: "FED"
+      tracking:
+        type: string
+        example: "29839283479382"
+  lab-order:
+    type: object
+    required:
+      - customer-id
+      - order-id
+    properties:
+      id:
+        type: string
+        example: "29839283479382"
+      order-id:
+        type: string
+        example: "29832"
+      customer-id:
+        type: string
+        example: "3920002"
+      last-name:
+        type: string
+        example: "Pillajo"
+      first-name:
+        type: string
+        example: "Carlos"
+      middle-name:
+        type: string
+        example: ""
+      gender:
+        type: string
+        example: "Male"
+      age:
+        type: string
+        example: "61 years"
+      date-of-birth-month:
+        type: integer
+        example: "07"
+      date-of-birth-day:
+        type: integer
+        example: "10"
+      date-of-birth-year:
+        type: integer
+        example: "1959"
+      address:
+        type: string
+        example: "3782 Love Drive"
+      city:
+        type: string
+        example: "Seattle"
+      state:
+        type: string
+        example: "WA"
+      country:
+        type: string
+        example: "US"
+      zip:
+        type: string
+        example: "98072"
+      day-phone-area-code:
+        type: integer
+        example: "202"
+      day-phone-exchange-number:
+        type: integer
+        example: "434"
+      day-phone-subsriber-number:
+        type: integer
+        example: "8222"
+      evening-phone-area-code:
+        type: integer
+        example: "425"
+      evening-phone-exchange-number:
+        type: integer
+        example: "222"
+      evening-phone-subscriber-number:
+        type: integer
+        example: "8498"
+      partner-order-id:
+        type: string
+        example: ""
+      location:
+        type: string
+        example: ""
+      phone:
+        type: string
+        example: ""
+      overriding-prac-name:
+        type: string
+        example: ""
+      date-received-month:
+        type: integer
+        example: "11"
+      date-received-day:
+        type: integer
+        example: "10"
+      date-received-year:
+        type: integer
+        example: "2020"
+      ship-method:
+        type: string
+        example: "FED"
+      tracking-number:
+        type: string
+        example: "2392839238"
+      sample-type:
+        type: string
+        example: "dbs"
+      sample-volume:
+        type: string
+        example: "15"
+      sample-volume-mini:
+        type: boolean
+        example: ""
+      date-collected-month:
+        type: integer
+        example: "04"
+      date-collected-day:
+        type: integer
+        example: "25"
+      date-collected-year:
+        type: integer
+        example: "2020"
+      time-collected-hour:
+        type: integer
+        example: "04"
+      time-collected-minute:
+        type: integer
+        example: "14"
+      time-collected-second:
+        type: string
+        example: "00"
+      time-zone:
+        type: string
+        example: "PST"
+      storage-condition:
+        type: string
+        example: ""
+      processing-comment:
+        type: string
+        example: ""
+      test-ordered:
+        type: string
+        example: ""
+      test-priority:
+        type: string
+        example: "RUSH"
+      status:
+        type: string
+        example: "PENDING"
+      order-status:
+        type: string
+        example: ""
+      request:
+        type: string
+        example: ""

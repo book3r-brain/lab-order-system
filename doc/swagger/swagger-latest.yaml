@@ -1,0 +1,636 @@
+swagger: '2.0'
+info:
+  version: 0.0.5
+  title: Notch Health D2C 
+  description: >
+    ## Overview
+
+    This specification defines the necessary resources needed to access a patient's information and the patient's test results.
+    
+    
+    A customer orders a test kit through a website, when the test kit order is received by the customer, they register each kit to a person who will take the test. When registering the kit, they will enter a test kit ID along with their name, date of birth and other personal information. 
+    
+    Upon submission of the kit ID, a lab order is created. Once the customer has administered the test, they mail back the kit to the lab.
+    
+    
+    The customer can track the kit to the lab, check the status or the results, update any personal information related to the lab order.
+    
+    
+    Eight services exist to that act as a broker of information between the lab system and the website.
+    
+    1) A service to create a kit order request
+    
+    2) A service to request the delivery status of a kit
+    
+    3) A service to update the kit order with kit IDs
+    
+    4) A service to create a lab order
+    
+    5) A service to get all lab orders for a customer
+    
+    6) A service to get a specific lab order (to check the status)
+    
+    7) A service to update a lab order
+    
+    8) A service to delete a lab order
+    
+    9) A service to check the existence of a lab order
+
+    10) A service to get the customer's Shopify orders
+
+    11) A service to check the Shopify customer info
+
+    12) A service to get a specific customer's Shopify order
+
+    13) A service to get a specific Shopify customer's info
+
+    14) A service to get a specific Shopify order from Shopify
+
+    15) A service to update a specific Shopify order in Shopify
+
+
+    In order to differentiate a Notch order from all other orders NOTCH-{Shopify Order Number} is stored in the Test Kit's requestor field. When passing data to the test kit order only include the Shopify Order Number in the requester field for inserting and updating.
+
+
+    Same thing somewhat applies to a lab-order, except the field used is the diagnosis field, but instead of passing a Shopify Order Number the caller will had to supply a unique key that they generate and place the key in the diagnosis field.
+
+
+    Test Kits IDs shipped are in the note field of an order.
+
+
+    Type of Test Ordered is in the sku field of a shopify line and are placed in the comment field for test kit record for convenience.
+
+    ## Approach
+
+
+    PUT - Send full resource representation in the entity body. In other words, replace not update.
+    
+    
+    POST – Subset of a resource's parameters requires updates. The full resource is not included in the entity body; however, the server needs to be aware of the partial update, and the resource needs to be different from any other operations (i.e. Create) that use the POST verb.
+    
+    
+    In either case, the full path to the resource must be specified in the URL. To reiterate, the path that points to the specific resource must be provided, a successful update should return an HTTP 204 with an empty entity-body. Any returned metadata is contained in the entity-headers. In some instances, there may be a need to return an entity-body. For example, if the values of any of the parameters in the response are different from what is specified in the request, the entity-body of the full resource is returned.
+    
+    
+    Use the HTTP verb DELETE when deleting a resource. For a successful deletion, an HTTP 204 status code is returned.
+    
+
+
+
+    ## References
+
+    The following checklist was used in the construction of the REST resources:
+
+    - Uniform Resource Locators (RFC 1738)
+
+    - HTTP Standards (rfc1945, rfc7230, rfc7231, rfc7232, rfc7233, rfc7234 and
+    rfc7235)
+
+    - US Biotek REST Design Guide
+
+    - Keep a simple URL structure
+    - https://support.google.com/webmasters/answer/76329?hl=en
+
+    - Use canonical URLs
+    https://support.google.com/webmasters/answer/139066?hl=en
+
+
+
+
+
+    ## Design Guidelines
+
+    The following checklist was used in the construction of the REST resources:
+
+    - No verbs in the URL resource definition
+
+    - Following the REST design pattern
+    /{plural-noun}/{ID}/{plural-noun}/{ID}...
+
+    - Resource-restrictive URI
+
+    - Ensuring REST resource is stateless
+
+    - Not using REST as function calls
+
+    - No abbreviations in the names (except for ID)
+
+    - Identifying the data entities and not focusing on functions
+
+    - Integration with other projects or application consideration
+
+    - Making sure REST resource can be controlled by the caller/client
+
+    - The REST resource name is a noun and easy to recognize
+
+    - The REST resource does not use spaces in the name
+
+    - The slash in the URI should express a parent-child relationship
+
+    - The REST resource only uses the query string when necessary
+
+    - The REST resource does not derive metadata from the URI
+
+    - The REST resource is client side cacheable
+
+    - The REST resource is explicitly using HTTP actions (PUT, POST, DELETE, GET,
+    HEAD)
+
+    - The response returns a request ID for troubleshooting purposes
+
+    - The resource is lowercase
+
+    - Payload is simple, human readable
+
+    - Resource fully documented?
+host: "notchapi-service-ovvelzitca-uw.a.run.app"
+basePath: / 
+
+schemes:
+  - https
+produces:
+  - application/json
+consumes:
+  - application/json
+paths:
+    /test-kit-orders:
+      post:
+        tags:
+          - test-kit-order
+        parameters:
+          - name: testKit
+            in: body
+            description: "User events captured"
+            required: true
+            schema:
+              type: object
+              items:
+                $ref: '#/definitions/test-kit'
+        summary: "Create test kit order"
+        operationId: testKitOrderPost
+        responses:
+          '201':
+            description: test kit created
+    /test-kit-orders/{id}:
+      get:
+        tags:
+          - test-kit-order
+        parameters:
+          - in: path
+            name: id
+            type: string
+            required: true
+            description: "ID of test kit"
+        summary: "Get the tracking information based on test kit id"
+        operationId: testKitOrderGetByID
+        responses:
+          '200':
+            description: "Test kit object"
+      post:
+        tags:
+          - test-kit-order
+        parameters:
+          - name: id
+            in: path
+            description: "ID of test kit"
+            required: true
+            type: string
+          - name: kit
+            in: body
+            description: "Kit ID/s to be associated with kit order"
+            required: true
+            schema:
+              type: object
+              items:
+                $ref: '#/definitions/test-kit'
+        summary: "Update the test kit order with test kit id/s"
+        operationId: testKitOrderUpdateByID
+        responses:
+          '200':
+            description: "Test kit object"
+
+    /lab-orders:
+      post:
+        tags:
+          - lab-order
+        parameters:
+          - name: lab-order
+            in: body
+            description: "User events captured"
+            required: true
+            schema:
+              type: object
+              items:
+                $ref: '#/definitions/lab-order'
+        summary: "Create a lab order for the customer"
+        operationId: labOrderPost
+        responses:
+          '201':
+            description: "lab order object created "
+      get:
+        tags:
+          - lab-order
+        parameters:
+          - name: customer-id
+            in: query
+            description: "User events captured"
+            required: true
+            type: string
+        summary: "Get all lab orders for customer based on customer ID"
+        operationId: labOrderGet
+        responses:
+          '200':
+            description: "lab order response object"
+            schema:
+              type: object
+              items:
+                $ref: '#/definitions/lab-order'
+      
+    /lab-orders/{id}:
+      get:
+        tags:
+          - lab-order
+        summary: "Get a specified lab order based on order ID"
+        operationId: labOrderGetByID
+        parameters:
+          - name: id
+            in: path
+            description: "ID of the lab order"
+            required: true
+            type: string
+        responses:
+          '200':
+            description: "delivery response object"
+      put:
+        tags:
+          - lab-order
+        parameters:
+          - name: id
+            in: path
+            description: "ID of the lab order"
+            required: true
+            type: string
+          - name: lab-order
+            in: body
+            description: "User events captured"
+            required: true
+            schema:
+              type: object
+              items:
+                $ref: '#/definitions/lab-order'
+        summary: "Update the lab order for a customer/practioner based on order ID"
+        operationId: labOrderUpdateFullByID
+        responses:
+          '200':
+            description: "updated lab order"
+      delete:
+        tags:
+          - lab-order
+        parameters:
+          - name: id
+            in: path
+            description: "ID of the lab order"
+            required: true
+            type: string
+        summary: "Delete the lab order based on order ID"
+        operationId: labOrderDelete
+        responses:
+          '200':
+            description: "deletion successful"
+      head:
+        tags:
+          - lab-order
+        parameters:
+          - name: id
+            in: path
+            description: "ID of the lab order"
+            required: true
+            type: string
+        summary: "See if lab order exist based on order ID"
+        operationId: labOrderHead
+        responses:
+          '200':
+            description: "Lab order exist"
+
+
+    /orders/{id}:
+      get:
+        tags:
+          - order
+        parameters:
+          - name: id
+            in: path
+            description: "ID of the shopify order"
+            required: true
+            type: string
+        summary: "Get a specified shopify order based on order ID"
+        operationId: ShopifyOrderGetByID
+        responses:
+          '200':
+            description: "response object"
+
+    /orders:
+      post:
+        tags:
+          - order
+        parameters:
+          - name: email
+            in: body
+            description: "email address associated to the shopify order"
+            required: true
+            schema:
+              type: string
+        summary: "Get a specified shopify order based on order email"
+        operationId: ShopifyOrderGetByEmail
+        responses:
+          '200':
+            description: "response object"
+        
+    /customers/{id}:
+      get:
+        tags:
+          - customer
+        parameters:
+          - name: id
+            in: path
+            description: "ID of the shopify order"
+            required: true
+            type: string
+        summary: "Get a specified shopify customer based on customer ID"
+        operationId: ShopifyCustomerGetByID
+        responses:
+          '200':
+            description: "response object"
+
+    /customers:
+      post:
+        tags:
+          - customer
+        parameters:
+          - name: email
+            in: body
+            description: "Email address of the shopify customer"
+            required: true
+            schema:
+              type: string
+        summary: "Get a specified shopify customer based on customer ID"
+        operationId: ShopifyCustomerGetByEmail
+        responses:
+          '200':
+            description: "response object"
+
+    /shopfiy-orders/{id}:
+      get:
+        tags:
+          - shopify-direct
+        parameters:
+          - name: id
+            in: path
+            description: "ID address of shopify order"
+            required: true
+            type: string
+        summary: "Get a specified shopify order from Shopify"
+        operationId: GetOrderFromShopiy
+        responses:
+          '200':
+            description: "response object"
+        
+    /webhooks/orders/create:
+      post:
+        tags:
+          - shopify-webhook
+        summary: "Shopify sending order information upon creation"
+        operationId: WebhookShopifyOrderCreate
+        responses:
+          '200':
+            description: "A successful response"
+        
+    /webhooks/orders/update:
+      post:
+        tags:
+          - shopify-webhook
+        summary: "Shopify sending order information upon update"
+        operationId: WebhookShopifyOrderUpdate
+        responses:
+          '200':
+            description: "A successful response"
+
+    /webhooks/customer:
+      post:
+        tags:
+          - shopify-webhook
+        summary: "Shopify sending customer information upon creation"
+        operationId: WebhookShopifyCustomerCreate
+        responses:
+          '200':
+            description: "A successful response"
+        
+    /webhooks/customer/update:
+      post:
+        tags:
+          - shopify-webhook
+        summary: "Shopify sending customer information upon update"
+        operationId: WebhookShopifyCustomerUpdate
+        responses:
+          '200':
+            description: "A successful response"
+
+definitions:
+  test-kit:
+    type: object
+    properties:
+      id:
+        type: string
+      order-id:
+        type: string
+      customer-id:
+        type: string
+      pract-id:
+        type: string
+      order-date:
+        type: string
+      order-taker:
+        type: string
+      requester:
+        type: string
+      process-type:
+        type: string
+      loc-pos:
+        type: string
+      clinic-name:
+        type: string
+      address1:
+        type: string
+      address2:
+        type: string
+      city:
+        type: string
+      state:
+        type: string
+      other-state:
+        type: string
+      zip:
+        type: string
+      country:
+        type: string
+      req-loc:
+        type: string
+      shipping-method:
+        type: string
+      tracking-num:
+        type: string
+      status:
+        type: string
+      comment:
+        type: string
+      kit-id:
+        type: string
+  lab-order:
+    type: object
+    properties:
+      id:
+        type: string
+      order-id:
+        type: string
+      customer-id:
+        type: string
+      prefix:
+        type: string
+      invoice-num:
+        type: string
+      invoice-date:
+        type: string
+      prac-id:
+        type: string
+      prac-name:
+        type: string
+      print-batch-id:
+        type: string
+      loc-pos:
+        type: string
+      owner-fname:
+        type: string
+      owner-mname:
+        type: string
+      owner-lname:
+        type: string
+      patient-fname:
+        type: string
+      patient-mname:
+        type: string
+      patient-lname:
+        type: string
+      patient-gender:
+        type: string
+      patient-age:
+        type: string
+      patient-dob:
+        type: string
+      patient-ssn:
+        type: string
+      patient-address:
+        type: string
+      patient-city:
+        type: string
+      patient-state:
+        type: string
+      patient-country:
+        type: string
+      patient-zip:
+        type: string
+      patient-phday:
+        type: string
+      patient-pheve:
+        type: string
+      ship-method:
+        type: string
+      tracking-num:
+        type: string
+      ship-priority:
+        type: string
+      date-received:
+        type: string
+      date-drawn:
+        type: string
+      species:
+        type: string
+      breed:
+        type: string
+      sample-type:
+        type: string
+      sample-volume:
+        type: string
+      patient-phase:
+        type: string
+      patient-cycle-day:
+        type: string
+      patient-cycle-length:
+        type: string
+      storage:
+        type: string
+      diagnoses:
+        type: string
+      icd9:
+        type: string
+      test-ordered:
+        type: string
+      locale:
+        type: string
+      test-priority:
+        type: string
+      rush-date:
+        type: string
+      bill-method:
+        type: string
+      bill-ref:
+        type: string
+      check-amount:
+        type: string
+      status:
+        type: string
+      report-template:
+        type: string
+      comment:
+        type: string
+      entry-comment:
+        type: string
+      reject-code:
+        type: string
+      processing-comment:
+        type: string
+      ordered-date:
+        type: string
+      ordered-by:
+        type: string
+      request:
+        type: string
+      do-not-send:
+        type: string
+      verified:
+        type: string
+      sent-to-blis:
+        type: string
+      sent-to-qb:
+        type: string
+      label-amount:
+        type: string
+      label-print-status:
+        type: string
+      override-partner-processing:
+        type: string
+      partner-id:
+        type: string
+      partner-status-id:
+        type: string
+      partner-processing-comment:
+        type: string
+      time-drawn:
+        type: string
+      time-zone-drawn:
+        type: string
+      partner-order-id:
+        type: string
+      approved-order-type-id:
+        type: string
+      file:
+        type: string

@@ -1,0 +1,22 @@
+#  The workflow allows running tests and code linting on the default branch.
+
+image: node:14
+
+pipelines:
+  default:
+    - parallel:
+        - step:
+            name: Build and Test
+            caches:
+              - node
+            script:
+              - node -v
+              - npm install
+        - step:
+            name: Code linting
+            script:
+              - npm install eslint
+              - npx eslint .
+            caches:
+              - node
+

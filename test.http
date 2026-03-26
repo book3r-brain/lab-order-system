@@ -1,0 +1,174 @@
+@base_url = http://localhost:8080
+@test_email = test@example.com
+
+### Welcome Page
+GET {{base_url}}/ HTTP/1.1
+
+### Post /customers/
+POST {{base_url}}/customers/ HTTP/1.1
+Content-Type: application/json
+
+{
+    "email": "{{test_email}}"
+}
+
+### Post /customers/create
+POST {{base_url}}/customers/create HTTP/1.1
+Content-Type: application/json
+
+{
+    "id": 999999,
+    "email": "new.user@example.com",
+    "firstName": "New",
+    "lastName": "User"
+}
+
+### Test Shopify Webhook - Create Order
+POST {{base_url}}/webhooks/orders/create HTTP/1.1
+Content-Type: application/json
+
+{
+  "id": 5201837462731,
+  "email": "sarah.mitchell@example.com",
+  "created_at": "2026-03-26T10:15:00-05:00",
+  "total_price": "189.00",
+  "currency": "USD",
+  "shipping_address": {
+    "first_name": "Sarah",
+    "last_name": "Mitchell",
+    "address1": "4821 Elmwood Drive",
+    "address2": "Apt 3B",
+    "city": "Austin",
+    "province": "Texas",
+    "province_code": "TX",
+    "zip": "78701",
+    "country": "United States",
+    "country_code": "US",
+    "phone": "512-555-0192"
+  },
+  "line_items": [
+    {
+      "id": 13847201938,
+      "title": "Hormone Panel Test Kit",
+      "sku": "TEST-HORMONE-01",
+      "quantity": 1,
+      "price": "149.00",
+      "vendor": "NotchData Labs",
+      "requires_shipping": true,
+      "taxable": false
+    }
+  ]
+}
+
+### Test Shopify Webhook - Create Customer
+POST {{base_url}}/webhooks/customer HTTP/1.1
+Content-Type: application/json
+
+{
+    "id": 123123123,
+    "email": "sarah.mitchell@example.com",
+    "first_name": "Sarah",
+    "last_name": "Mitchell",
+    "phone": "512-555-0192"
+}
+
+### GET /shopify-orders/token 
+GET {{base_url}}/shopify-orders/token HTTP/1.1
+
+### Create Lab Order
+POST {{base_url}}/lab-orders/ HTTP/1.1
+Content-Type: application/json
+
+{
+    "order-id": "12345",
+    "customer-id": "cust_001",
+    "prefix": "Mr.",
+    "invoice-num": "INV-1001",
+    "invoice-date": "2026-03-26",
+    "prac-name": "Dr. Smith",
+    "print-batch-id": "BATCH-01",
+    "owner-fname": "John",
+    "owner-mname": "A",
+    "owner-lname": "Doe",
+    "patient-fname": "Jane",
+    "patient-mname": "B",
+    "patient-lname": "Doe",
+    "patient-gender": "Female",
+    "patient-age": "30",
+    "patient-dob": "1996-01-01",
+    "patient-ssn": "000-00-0000",
+    "patient-address": "123 Main St",
+    "patient-city": "Anytown",
+    "patient-state": "CA",
+    "patient-country": "USA",
+    "patient-zip": "12345",
+    "patient-phday": "555-123-4567",
+    "patient-pheve": "555-987-6543",
+    "ship-method": "FedEx",
+    "tracking-num": "TRK123456789",
+    "ship-priority": "Overnight",
+    "date-drawn": "2026-03-25",
+    "species": "Human",
+    "breed": "N/A",
+    "sample-type": "Blood",
+    "sample-volume": "10ml",
+    "patient-phase": "N/A",
+    "patient-cycle-day": "N/A",
+    "patient-cycle-length": "N/A",
+    "storage": "Refrigerated",
+    "diagnoses": "Routine Checkup",
+    "icd9": "V70.0",
+    "test-ordered": "Complete Blood Count",
+    "locale": "en-US",
+    "test-priority": "Normal",
+    "rush-date": "",
+    "bill-method": "Insurance",
+    "bill-ref": "INS-9876",
+    "check-amount": "0.00",
+    "status": "Pending",
+    "report-template": "Standard",
+    "comment": "Dummy lab order test",
+    "entry-comment": "Entered via test.http",
+    "reject-code": "",
+    "processing-comment": "Ready for processing",
+    "ordered-date": "2026-03-26",
+    "ordered-by": "Jane Doe",
+    "request": "Standard Analysis",
+    "do-not-send": false,
+    "verified": true,
+    "sent-to-blis": false,
+    "sent-to-qb": false,
+    "label-amount": "2",
+    "label-print-status": "Pending",
+    "override-partner-processing": false,
+    "partner-id": "PARTNER_01",
+    "partner-status-id": "STATUS_NEW",
+    "partner-processing-comment": "",
+    "time-drawn": "08:00 AM",
+    "time-zone-drawn": "EST",
+    "partner-order-id": "PO-54321",
+    "approved-order-type-id": "TYPE_A"
+}
+
+### Create Test Kit Order
+POST {{base_url}}/test-kit-orders/ HTTP/1.1
+Content-Type: application/json
+
+{
+    "order-id": "TK-98765",
+    "customer-id": "cust_001",
+    "process-type": "Standard",
+    "loc-pos": "POS-01",
+    "clinic-name": "Health Clinic NYC",
+    "address1": "456 Wellness Way",
+    "address2": "Suite 200",
+    "city": "New York",
+    "state": "NY",
+    "zip": "10001",
+    "country": "USA",
+    "shipping-method": "UPS Ground",
+    "tracking-num": "1Z9999999999999999",
+    "status": "New",
+    "comment": "Test kit requested via dummy request",
+    "kit-id": "KIT-102938"
+}

@@ -1,0 +1,529 @@
+# openapi2-run.yaml
+swagger: '2.0'
+info:
+  title: Notch data api
+  description: "This specification defines the necessary resources needed to access customer information."
+  version: 0.0.5
+schemes:
+- https
+produces:
+- application/json
+paths:
+    /test-kit-orders:
+      post:
+        tags:
+          - test-kit-order
+        parameters:
+          - name: testKit
+            in: body
+            description: "User events captured"
+            required: true
+            schema:
+              type: object
+              items:
+                $ref: '#/definitions/test-kit'
+        summary: "Create test kit order"
+        operationId: testKitOrderPost
+        security:
+        - api_key: []
+        responses:
+          '201':
+            description: test kit created
+    /test-kit-orders/{id}:
+      get:
+        tags:
+          - test-kit-order
+        parameters:
+          - in: path
+            name: id
+            type: string
+            required: true
+            description: "ID of test kit"
+        summary: "Get the tracking information based on test kit id"
+        operationId: testKitOrderGetByID
+        security:
+        - api_key: []
+        responses:
+          '200':
+            description: "Test kit object"
+      post:
+        tags:
+          - test-kit-order
+        parameters:
+          - name: id
+            in: path
+            description: "ID of test kit"
+            required: true
+            type: string
+          - name: kit
+            in: body
+            description: "Kit ID/s to be associated with kit order"
+            required: true
+            schema:
+              type: object
+              items:
+                $ref: '#/definitions/test-kit'
+        summary: "Update the test kit order with test kit id/s"
+        operationId: testKitOrderUpdateByID
+        security:
+        - api_key: []
+        responses:
+          '200':
+            description: "Test kit object"
+
+    /lab-orders:
+      post:
+        tags:
+          - lab-order
+        parameters:
+          - name: lab-order
+            in: body
+            description: "User events captured"
+            required: true
+            schema:
+              type: object
+              items:
+                $ref: '#/definitions/lab-order'
+        summary: "Create a lab order for the customer"
+        operationId: labOrderPost
+        security:
+        - api_key: []
+        responses:
+          '201':
+            description: "lab order object created "
+      get:
+        tags:
+          - lab-order
+        parameters:
+          - name: customer-id
+            in: query
+            description: "User events captured"
+            required: true
+            type: string
+        summary: "Get all lab orders for customer based on customer ID"
+        operationId: labOrderGet
+        security:
+        - api_key: []
+        responses:
+          '200':
+            description: "lab order response object"
+            schema:
+              type: object
+              items:
+                $ref: '#/definitions/lab-order'
+      
+    /lab-orders/{id}:
+      get:
+        tags:
+          - lab-order
+        summary: "Get a specified lab order based on order ID"
+        operationId: labOrderGetByID
+        security:
+        - api_key: []
+        parameters:
+          - name: id
+            in: path
+            description: "ID of the lab order"
+            required: true
+            type: string
+        responses:
+          '200':
+            description: "delivery response object"
+      put:
+        tags:
+          - lab-order
+        parameters:
+          - name: id
+            in: path
+            description: "ID of the lab order"
+            required: true
+            type: string
+          - name: lab-order
+            in: body
+            description: "User events captured"
+            required: true
+            schema:
+              type: object
+              items:
+                $ref: '#/definitions/lab-order'
+        summary: "Update the lab order for a customer/practioner based on order ID"
+        operationId: labOrderUpdateFullByID
+        security:
+        - api_key: []
+        responses:
+          '200':
+            description: "updated lab order"
+      delete:
+        tags:
+          - lab-order
+        parameters:
+          - name: id
+            in: path
+            description: "ID of the lab order"
+            required: true
+            type: string
+        summary: "Delete the lab order based on order ID"
+        operationId: labOrderDelete
+        responses:
+          '200':
+            description: "deletion successful"
+      head:
+        tags:
+          - lab-order
+        parameters:
+          - name: id
+            in: path
+            description: "ID of the lab order"
+            required: true
+            type: string
+        summary: "See if lab order exist based on order ID"
+        operationId: labOrderHead
+        security:
+        - api_key: []
+        responses:
+          '200':
+            description: "Lab order exist"
+
+
+    /orders/{id}:
+      get:
+        tags:
+          - order
+        parameters:
+          - name: id
+            in: path
+            description: "ID of the shopify order"
+            required: true
+            type: string
+        summary: "Get a specified shopify order based on order ID"
+        operationId: ShopifyOrderGetByID
+        security:
+        - api_key: []
+        responses:
+          '200':
+            description: "response object"
+
+    /orders:
+      post:
+        tags:
+          - order
+        parameters:
+          - name: email
+            in: body
+            description: "email address associated to the shopify order"
+            required: true
+            schema:
+              type: string
+        summary: "Get a specified shopify order based on order email"
+        operationId: ShopifyOrderGetByEmail
+        security:
+        - api_key: []
+        responses:
+          '200':
+            description: "response object"
+        
+    /customers/{id}:
+      get:
+        tags:
+          - customer
+        parameters:
+          - name: id
+            in: path
+            description: "ID of the shopify order"
+            required: true
+            type: string
+        summary: "Get a specified shopify customer based on customer ID"
+        operationId: ShopifyCustomerGetByID
+        security:
+        - api_key: []
+        responses:
+          '200':
+            description: "response object"
+
+    /customers:
+      post:
+        tags:
+          - customer
+        parameters:
+          - name: email
+            in: body
+            description: "Email address of the shopify customer"
+            required: true
+            schema:
+              type: string
+        summary: "Get a specified shopify customer based on customer ID"
+        operationId: ShopifyCustomerGetByEmail
+        security:
+        - api_key: []
+        responses:
+          '200':
+            description: "response object"
+
+    /shopfiy-orders/{id}:
+      get:
+        tags:
+          - shopify-direct
+        parameters:
+          - name: id
+            in: path
+            description: "ID address of shopify order"
+            required: true
+            type: string
+        summary: "Get a specified shopify order from Shopify"
+        operationId: GetOrderFromShopiy
+        security:
+        - api_key: []
+        responses:
+          '200':
+            description: "response object"
+        
+    /webhooks/orders/create:
+      post:
+        tags:
+          - shopify-webhook
+        summary: "Shopify sending order information upon creation"
+        operationId: WebhookShopifyOrderCreate
+        security: []
+        responses:
+          '200':
+            description: "A successful response"
+        
+    /webhooks/orders/update:
+      post:
+        tags:
+          - shopify-webhook
+        summary: "Shopify sending order information upon update"
+        operationId: WebhookShopifyOrderUpdate
+        security: []
+        responses:
+          '200':
+            description: "A successful response"
+
+    /webhooks/customer:
+      post:
+        tags:
+          - shopify-webhook
+        summary: "Shopify sending customer information upon creation"
+        operationId: WebhookShopifyCustomerCreate
+        security: []
+        responses:
+          '200':
+            description: "A successful response"
+        
+    /webhooks/customer/update:
+      post:
+        tags:
+          - shopify-webhook
+        summary: "Shopify sending customer information upon update"
+        operationId: WebhookShopifyCustomerUpdate
+        security: []
+        responses:
+          '200':
+            description: "A successful response"
+
+definitions:
+  test-kit:
+    type: object
+    properties:
+      id:
+        type: string
+      order-id:
+        type: string
+      customer-id:
+        type: string
+      pract-id:
+        type: string
+      order-date:
+        type: string
+      order-taker:
+        type: string
+      requester:
+        type: string
+      process-type:
+        type: string
+      loc-pos:
+        type: string
+      clinic-name:
+        type: string
+      address1:
+        type: string
+      address2:
+        type: string
+      city:
+        type: string
+      state:
+        type: string
+      other-state:
+        type: string
+      zip:
+        type: string
+      country:
+        type: string
+      req-loc:
+        type: string
+      shipping-method:
+        type: string
+      tracking-num:
+        type: string
+      status:
+        type: string
+      comment:
+        type: string
+      kit-id:
+        type: string
+  lab-order:
+    type: object
+    properties:
+      id:
+        type: string
+      order-id:
+        type: string
+      customer-id:
+        type: string
+      prefix:
+        type: string
+      invoice-num:
+        type: string
+      invoice-date:
+        type: string
+      prac-id:
+        type: string
+      prac-name:
+        type: string
+      print-batch-id:
+        type: string
+      loc-pos:
+        type: string
+      owner-fname:
+        type: string
+      owner-mname:
+        type: string
+      owner-lname:
+        type: string
+      patient-fname:
+        type: string
+      patient-mname:
+        type: string
+      patient-lname:
+        type: string
+      patient-gender:
+        type: string
+      patient-age:
+        type: string
+      patient-dob:
+        type: string
+      patient-ssn:
+        type: string
+      patient-address:
+        type: string
+      patient-city:
+        type: string
+      patient-state:
+        type: string
+      patient-country:
+        type: string
+      patient-zip:
+        type: string
+      patient-phday:
+        type: string
+      patient-pheve:
+        type: string
+      ship-method:
+        type: string
+      tracking-num:
+        type: string
+      ship-priority:
+        type: string
+      date-received:
+        type: string
+      date-drawn:
+        type: string
+      species:
+        type: string
+      breed:
+        type: string
+      sample-type:
+        type: string
+      sample-volume:
+        type: string
+      patient-phase:
+        type: string
+      patient-cycle-day:
+        type: string
+      patient-cycle-length:
+        type: string
+      storage:
+        type: string
+      diagnoses:
+        type: string
+      icd9:
+        type: string
+      test-ordered:
+        type: string
+      locale:
+        type: string
+      test-priority:
+        type: string
+      rush-date:
+        type: string
+      bill-method:
+        type: string
+      bill-ref:
+        type: string
+      check-amount:
+        type: string
+      status:
+        type: string
+      report-template:
+        type: string
+      comment:
+        type: string
+      entry-comment:
+        type: string
+      reject-code:
+        type: string
+      processing-comment:
+        type: string
+      ordered-date:
+        type: string
+      ordered-by:
+        type: string
+      request:
+        type: string
+      do-not-send:
+        type: string
+      verified:
+        type: string
+      sent-to-blis:
+        type: string
+      sent-to-qb:
+        type: string
+      label-amount:
+        type: string
+      label-print-status:
+        type: string
+      override-partner-processing:
+        type: string
+      partner-id:
+        type: string
+      partner-status-id:
+        type: string
+      partner-processing-comment:
+        type: string
+      time-drawn:
+        type: string
+      time-zone-drawn:
+        type: string
+      partner-order-id:
+        type: string
+      approved-order-type-id:
+        type: string
+      file:
+        type: string        
+
+securityDefinitions:
+  # This section configures basic authentication with an API key.
+  api_key:
+    type: "apiKey"
+    name: "key"
+    in: "query"
