@@ -28,9 +28,11 @@ const getShopifyToken = async (req, res, next) => {
     }
 };
 
-router.get("/token", getShopifyToken, (req, res) => {
-    res.json({ access_token: req.shopifyToken });
-});
+// SECURITY: The previous GET /token endpoint has been permanently removed.
+// It returned the live Shopify Admin access token to any unauthenticated
+// caller (credential disclosure — P0). Do not reintroduce a route that
+// exposes req.shopifyToken in a response body. The getShopifyToken
+// middleware below remains strictly internal.
 
 /********************************** Shopify Info Retrieval *************************************************************************/
 
