@@ -1,8 +1,10 @@
 require('dotenv').config();
 const express = require('express');
-const bodyParser = require('body-parser');
 const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
+const secureLogger = require('./services/secure-logger');
+const errorHandler = require('./middleware/error-handler');
+const requireActor = require('./middleware/require-actor');
 
 const path = require('path');
 
@@ -17,15 +19,19 @@ const customerRoutes = require('./routes/customers');
 const shopifyOrderRoutes = require('./routes/shopfiy-orders');
 const webhookRoutes = require('./routes/webhooks');
 
-app.use(bodyParser.json({
+app.use(express.json({
     verify: (req, res, buf) => {
-        req.rawBody = buf;
+        req.rawBody = Buffer.from(buf);
     }
+}));
+
+app.use(express.urlencoded({
+    extended: false,
 }));
 
 app.use('/test-kit-orders', testKitRoutes);
 
-app.use('/lab-orders', labOrderRoutes);
+app.use('/lab-orders', requireActor, labOrderRoutes);
 
 app.use('/orders', orderRoutes);
 
@@ -39,6 +45,20 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.get('/', function (req, res) {
     res.sendFile(path.join(__dirname, '/public/welcome.html'));
+});
+
+app.use(errorHandler);
+
+process.on('unhandledRejection', (reason) => {
+    const error = reason instanceof Error ? reason : new Error(String(reason));
+    secureLogger.logError(error, null, { source: 'unhandledRejection' });
+});
+
+process.on('uncaughtException', (error) => {
+    secureLogger.logError(error, null, { source: 'uncaughtException' })
+        .finally(() => {
+            process.exit(1);
+        });
 });
 
 const port = process.env.PORT || 8080;

@@ -1,7 +1,8 @@
 
 const express = require('express');
 const router = express.Router();
-const db = require('../database.js');
+const asyncHandler = require('../middleware/async-handler');
+const labOrderRepository = require('../repositories/lab-order-repository');
 
 const { PubSub } = require("@google-cloud/pubsub");
 const pubsubRepository = require("../repositories/pub-sub-repo");
@@ -13,151 +14,118 @@ const topicName = "lab_order_topic";
 /********************************** Lab Order *************************************************************************/
 
 // Create lab order information for customer.
-router.post('/', async (req, res) => {
-    try {
-        const orderID = req.body["order-id"];
+router.post('/', asyncHandler(async (req, res) => {
+    const actorId = req.auth.actorId;
+    const orderId = req.body['order-id'];
+    const data = extractLabOrderData(req, actorId, orderId);
 
-        const data = extractLabOrderData(req);
+    const messageId = await publishMessage(pubSubClient, topicName, data);
+    console.log({ status: 'Creating Lab order' });
 
+    const persistedOrder = await labOrderRepository.create(actorId, data);
 
-        let messageId = await publishMessage(pubSubClient, topicName, data);
-        console.log({ status: "Creating Lab order" });
-
-        await db.collection('lab-orders').doc(orderID).set(data);
-
-        res.status(201).json({
-            action: "LAB ORDER CREATE",
-            success: true,
-            message: `Message ${messageId} published :)`
-        })
-
-    } catch (e) {
-        console.error("NOTCH ERROR", e.message);
-        res.status(400).json({"ERROR": e.message});
-    }
-
-});
+    res.status(201).json({
+        action: 'LAB ORDER CREATE',
+        success: true,
+        message: `Message ${messageId} published :)`,
+        data: persistedOrder,
+    });
+}));
 
 // Get all lab orders for customer
-router.get('/', async (req, res) => {
-    try {
+router.get('/', asyncHandler(async (req, res) => {
+    const actorId = req.auth.actorId;
+    console.log({ status: `Getting test kit order for customer ${actorId}` });
 
-        const id = req.body["customer-id"];
-        console.log({ status: `Getting test kit order for customer ${id}` });
+    const records = await labOrderRepository.listByActor(actorId);
 
-        const labOrderRef = db.collection('lab-orders');
-        const snapshot = await labOrderRef.where('customer-id', '==', id).get();
-
-        if (snapshot.empty) {
-            console.log('No matching documents.');
-            res.status(404).json({ status: 'Not found!' });
-        } else {
-            const collection = {};
-            snapshot.forEach(doc => {
-                collection[doc.id] = doc.data();
-            });
-            res.status(200).json(collection);
-        }
-    } catch (e) {
-        console.error("NOTCH ERROR", e.message);
-        res.status(400).json({"ERROR": e.message});
+    if (records.length === 0) {
+        console.log('No matching documents.');
+        res.status(404).json({ status: 'Not found!' });
+        return;
     }
 
-
-});
+    const collection = {};
+    records.forEach((record) => {
+        collection[record.id] = record.data;
+    });
+    res.status(200).json(collection);
+}));
 
 // Get a specified lab order
-router.get('/:id', async (req, res) => {
-    try {
-        const id = req.params.id;
-        console.log({ status: `Getting specific lab order for order ID ${id}` });
+router.get('/:id', asyncHandler(async (req, res) => {
+    const actorId = req.auth.actorId;
+    const id = req.params.id;
+    console.log({ status: `Getting specific lab order for order ID ${id}` });
 
+    const record = await labOrderRepository.getById(actorId, id);
 
-        const query = db.collection('lab-orders').where('order-id', '==', id);
-        const queryShapshot = await query.get();
-
-        if (queryShapshot.size > 0) {
-            res.status(200).json(queryShapshot.docs[0].data());
-        } else {
-            res.status(404).json({ status: 'Not found!' });
-        }
-    } catch (e) {
-        console.error("NOTCH ERROR", e.message);
-        res.status(400).json({"ERROR": e.message});
+    if (record) {
+        res.status(200).json(record.data);
+    } else {
+        res.status(404).json({ status: 'Not found!' });
     }
-
-});
+}));
 
 // Update the lab order for a customer/practioner
-router.put('/:id', async (req, res) => {
-    try {
-        const id = req.params.id;
-        console.log({ status: `Update specific lab order for order ID ${id}` });
+router.put('/:id', asyncHandler(async (req, res) => {
+    const actorId = req.auth.actorId;
+    const id = req.params.id;
+    console.log({ status: `Update specific lab order for order ID ${id}` });
 
-        const data = extractLabOrderData(req);
+    const data = extractLabOrderData(req, actorId, id);
+    const messageId = await publishMessage(pubSubClient, topicName, data);
 
-        let messageId = await publishMessage(pubSubClient, topicName, data);
-
-        await db.collection('lab-orders').doc(id).set(data);
-
-        res.status(201).json({
-            action: "LAB ORDER UPDATE",
-            success: true,
-            message: `Message ${messageId} published :)`
-        })
-
-    } catch (e) {
-        console.error("NOTCH ERROR", e.message);
-        res.status(400).json({"ERROR": e.message});
+    const updatedRecord = await labOrderRepository.update(actorId, id, data);
+    if (!updatedRecord) {
+        res.status(404).json({ status: 'Not found!' });
+        return;
     }
 
-
-});
+    res.status(201).json({
+        action: 'LAB ORDER UPDATE',
+        success: true,
+        message: `Message ${messageId} published :)`,
+        data: updatedRecord.data,
+    });
+}));
 
 // See if lab order exists
-router.head('/:id', async (req, res) => {
-    try {
-        const id = req.params.id;
-        console.log({ status: `Getting specific lab order for order ID ${id}` });
+router.head('/:id', asyncHandler(async (req, res) => {
+    const actorId = req.auth.actorId;
+    const id = req.params.id;
+    console.log({ status: `Getting specific lab order for order ID ${id}` });
 
+    const exists = await labOrderRepository.exists(actorId, id);
 
-        const query = db.collection('lab-orders').where('order-id', '==', id);
-        const queryShapshot = await query.get();
-
-        if (queryShapshot.size > 0) {
-            res.status(200);
-        } else {
-            res.status(404);
-        }
-
-    } catch (e) {
-        console.error("NOTCH ERROR", e.message);
-        res.status(400).json({"ERROR": e.message});
+    if (exists) {
+        res.sendStatus(200);
+    } else {
+        res.sendStatus(404);
     }
-
-})
+}));
 
 // Delete the lab order for a customer/practioner
-router.delete('/:id', async (req, res) => {
-    try {
-        const id = req.params.id;
-        console.log({ status: `Delete specific lab order for order ID ${id}` });
+router.delete('/:id', asyncHandler(async (req, res) => {
+    const actorId = req.auth.actorId;
+    const id = req.params.id;
+    console.log({ status: `Delete specific lab order for order ID ${id}` });
 
-        const result = await db.collection('lab-orders').doc(id).delete();
-        res.status(410).json(result);
-
-    } catch (e) {
-        console.error("NOTCH ERROR", e.message);
-        res.status(400).json({"ERROR": e.message});
+    const deleted = await labOrderRepository.delete(actorId, id);
+    if (!deleted) {
+        res.status(404).json({ status: 'Not found!' });
+        return;
     }
-});
+
+    res.status(410).json({ success: true });
+}));
 
 module.exports = router
 
-function extractLabOrderData(req) {
+function extractLabOrderData(req, actorId, orderId) {
     return {
-        "order-id": req.body["order-id"],
-        "customer-id": req.body["customer-id"],
+        "order-id": String(orderId),
+        "customer-id": actorId,
         "prefix": req.body["prefix"],
         "invoice-num": req.body["invoice-num"],
         "invoice-date": req.body["invoice-date"],
