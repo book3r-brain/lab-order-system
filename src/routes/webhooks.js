@@ -49,7 +49,7 @@ router.post('/orders/create', async (req, res) => {
     }
 });
 
-router.post('/customer', async (req, res) => {
+router.post('/customers/create', async (req, res) => {
     console.log('🎉 We got a customer creation via webhook!');
     try {
         const customerData = req.body;

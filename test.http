@@ -1,5 +1,7 @@
 @base_url = http://localhost:8080
-@test_email = test@example.com
+@test_email = sarah.mitchell@example.com
+@test_user_id = 123123123
+
 
 ### Welcome Page
 GET {{base_url}}/ HTTP/1.1
@@ -17,10 +19,10 @@ POST {{base_url}}/customers/create HTTP/1.1
 Content-Type: application/json
 
 {
-    "id": 999999,
-    "email": "new.user@example.com",
-    "firstName": "New",
-    "lastName": "User"
+    "id": {{test_user_id}},
+    "email": "{{test_email}}",
+    "firstName": "Sarah",
+    "lastName": "Mitchell"
 }
 
 ### Test Shopify Webhook - Create Order
@@ -28,7 +30,7 @@ POST {{base_url}}/webhooks/orders/create HTTP/1.1
 Content-Type: application/json
 
 {
-  "id": 5201837462731,
+  "id": {{test_user_id}},
   "email": "sarah.mitchell@example.com",
   "created_at": "2026-03-26T10:15:00-05:00",
   "total_price": "189.00",
@@ -66,7 +68,7 @@ Content-Type: application/json
 
 {
     "id": 123123123,
-    "email": "sarah.mitchell@example.com",
+    "email": "{{test_email}}",
     "first_name": "Sarah",
     "last_name": "Mitchell",
     "phone": "512-555-0192"
@@ -135,7 +137,7 @@ Content-Type: application/json
     "reject-code": "",
     "processing-comment": "Ready for processing",
     "ordered-date": "2026-03-26",
-    "ordered-by": "Jane Doe",
+    "ordered-by": "Sarah Mitchell",
     "request": "Standard Analysis",
     "do-not-send": false,
     "verified": true,
