@@ -1,69 +1,105 @@
 const express = require('express');
-const router = express.Router();
 const crypto = require('crypto');
-const db = require('../database.js');
 
-// Middleware to verify Shopify Webhooks
+const defaultDb = require('../database.js');
+const { logAuditEvent } = require('../security/audit');
+const { handleRouteError } = require('../security/http');
+const { assertValidEmail, assertValidId } = require('../security/validation');
+
+const router = express.Router();
+
 const verifyShopifyWebhook = (req, res, next) => {
     try {
         const hmac = req.get('X-Shopify-Hmac-Sha256');
 
-        // Create a hash using the raw body and our key
         const hash = crypto
             .createHmac('sha256', process.env.SHOPIFY_API_WEBHOOK || '')
             .update(req.rawBody || '', 'utf8', 'hex')
             .digest('base64');
 
-        // Compare our hash to Shopify's hash
         if (hash === hmac) {
-            console.log('Webhook verified: Came from Shopify!');
             next();
         } else {
-            console.log('Danger! Webhook not from Shopify!');
             res.sendStatus(403);
         }
-    } catch (e) {
-        console.error("Webhook Verification Error:", e.message);
+    } catch (error) {
         res.sendStatus(500);
     }
 };
 
-// If you want to test webhooks locally without signature validation, 
-// you can comment out the middleware here, but it should be left on for production!
+router.verifyShopifyWebhook = verifyShopifyWebhook;
+
 // router.use(verifyShopifyWebhook);
 
 router.post('/orders/create', async (req, res) => {
-    console.log('🎉 We got an order via webhook!');
     try {
-        const orderData = req.body;
-        const orderId = orderData.id;
+        const orderData = sanitizeWebhookOrder(req.body);
 
-        // Example: Save the order to DB
-        await db.collection('orders').doc(String(orderId)).set(orderData);
-        
-        console.log(`Saved order ${orderId} to database.`);
-        res.status(200).send('Webhook processed successfully');
-    } catch (e) {
-        console.error("Webhook Order Create Error", e.message);
-        res.status(500).send(e.message);
+        await getDb(req).collection('orders').doc(String(orderData.id)).set(orderData);
+
+        logAuditEvent(req, {
+            action: 'webhook.order.ingest',
+            resourceId: orderData.id,
+            success: true,
+            user: 'shopify-webhook',
+        });
+
+        return res.status(200).send('Webhook processed successfully');
+    } catch (error) {
+        return handleRouteError(res, error);
     }
 });
 
 router.post('/customers/create', async (req, res) => {
-    console.log('🎉 We got a customer creation via webhook!');
     try {
-        const customerData = req.body;
-        const customerId = customerData.id;
+        const customerData = sanitizeWebhookCustomer(req.body);
 
-        // Save the customer to DB
-        await db.collection('customers').doc(String(customerId)).set(customerData);
-        
-        console.log(`Saved customer ${customerId} to database.`);
-        res.status(200).send('Webhook processed successfully');
-    } catch (e) {
-        console.error("Webhook Customer Create Error", e.message);
-        res.status(500).send(e.message);
+        await getDb(req).collection('customers').doc(String(customerData.id)).set(customerData);
+
+        logAuditEvent(req, {
+            action: 'webhook.customer.ingest',
+            resourceId: customerData.id,
+            success: true,
+            user: 'shopify-webhook',
+        });
+
+        return res.status(200).send('Webhook processed successfully');
+    } catch (error) {
+        return handleRouteError(res, error);
     }
 });
 
 module.exports = router;
+
+function getDb(req) {
+    return req.app.locals.db || defaultDb;
+}
+
+function sanitizeWebhookOrder(payload) {
+    assertValidId(payload.id, 'order-id', { required: true });
+    assertValidEmail(payload.email, 'email');
+
+    return {
+        id: payload.id,
+        email: payload.email,
+        created_at: payload.created_at,
+        currency: payload.currency,
+        financial_status: payload.financial_status,
+        line_items: payload.line_items,
+        shipping_address: payload.shipping_address,
+        total_price: payload.total_price,
+    };
+}
+
+function sanitizeWebhookCustomer(payload) {
+    assertValidId(payload.id, 'customer-id', { required: true });
+    assertValidEmail(payload.email, 'email');
+
+    return {
+        id: payload.id,
+        email: payload.email,
+        firstName: payload.firstName || payload.first_name,
+        lastName: payload.lastName || payload.last_name,
+        phone: payload.phone,
+    };
+}

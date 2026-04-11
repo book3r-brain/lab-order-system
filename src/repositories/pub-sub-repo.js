@@ -3,7 +3,7 @@ module.exports = {
         const dataBuffer = Buffer.from(JSON.stringify(payload));
 
         const messageId = await pubSubClient.topic(topicName).publish(dataBuffer);
-        console.log(`Message ${messageId} published.`);
+        console.info(JSON.stringify({ action: 'pubsub.publish', messageId, topicName }));
         return messageId;
     },
 
@@ -12,9 +12,7 @@ module.exports = {
 
         let messageCount = 0;
         const messageHandler = message => {
-            console.log(`Received message ${message.id}:`);
-            console.log(`\tData: ${message.data}`);
-            console.log(`\tAttributes: ${message.attributes}`);
+            console.info(JSON.stringify({ action: 'pubsub.receive', messageId: message.id }));
             messageCount += 1;
 
             message.ack();
@@ -24,7 +22,7 @@ module.exports = {
 
         setTimeout(() => {
             subscription.removeListener('message', messageHandler);
-            console.log(`${messageCount} message(s) received.`);
+            console.info(JSON.stringify({ action: 'pubsub.receive.complete', messageCount }));
         }, timeout * 1000);
     },
 
@@ -33,7 +31,6 @@ module.exports = {
             'utf-8'
         );
         let parsedMessage = JSON.parse(message);
-        console.log(parsedMessage);
         return parsedMessage;
     }
 
