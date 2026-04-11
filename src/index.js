@@ -1,48 +1,34 @@
+/**
+ * Production entrypoint.
+ *
+ * Loads dotenv (for local development), builds the app via the factory,
+ * and binds to the configured port. All runtime error surfaces go
+ * through the app's central error middleware — this file intentionally
+ * contains no request handling.
+ */
 require('dotenv').config();
-const express = require('express');
-const bodyParser = require('body-parser');
-const swaggerUi = require('swagger-ui-express');
-const YAML = require('yamljs');
 
-const path = require('path');
+const createApp = require('./app');
+const { logger } = require('./logger');
 
-const app = express();
-
-const swaggerDocument = YAML.load(path.join(__dirname, '../doc/swagger/swagger-latest.yaml'));
-
-const testKitRoutes = require('./routes/test-kit-orders');
-const labOrderRoutes = require('./routes/lab-orders');
-const orderRoutes = require('./routes/orders');
-const customerRoutes = require('./routes/customers');
-const shopifyOrderRoutes = require('./routes/shopfiy-orders');
-const webhookRoutes = require('./routes/webhooks');
-
-app.use(bodyParser.json({
-    verify: (req, res, buf) => {
-        req.rawBody = buf;
+function main() {
+    let app;
+    try {
+        app = createApp();
+    } catch (err) {
+        // Boot-time config errors are logged through the structured
+        // logger and then rethrown so the process exits non-zero.
+        logger.fatal(
+            { err: { name: err.name, message: err.message, code: err.code } },
+            'failed_to_start'
+        );
+        process.exit(1);
     }
-}));
 
-app.use('/test-kit-orders', testKitRoutes);
+    const port = Number(process.env.PORT) || 8080;
+    app.listen(port, () => {
+        logger.info({ port, env: process.env.NODE_ENV }, 'listening');
+    });
+}
 
-app.use('/lab-orders', labOrderRoutes);
-
-app.use('/orders', orderRoutes);
-
-app.use('/customers', customerRoutes);
-
-app.use('/shopify-orders', shopifyOrderRoutes);
-
-app.use('/webhooks', webhookRoutes);
-
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-
-app.get('/', function (req, res) {
-    res.sendFile(path.join(__dirname, '/public/welcome.html'));
-});
-
-const port = process.env.PORT || 8080;
-
-app.listen(port, () => {
-    console.log('Listening on port ', port, app.get('env'));
-});
+main();

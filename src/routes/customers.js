@@ -1,85 +1,66 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../database.js');
+const { logger } = require('../logger');
 
-router.get('/:id', async (req, res) => {
-
+router.get('/:id', async (req, res, next) => {
     try {
         const id = req.params.id;
-        console.log({ status: `Getting specific shopify customer for customer ID ${id}` });
-
+        req.audit && req.audit.setResource(id);
+        logger.info({ request_id: req.id }, 'shopify_customer_read');
 
         const query = db.collection('customers').where('id', '==', Number(id));
-        const queryShapshot = await query.get();
+        const snap = await query.get();
 
-        if (queryShapshot.size > 0) {
-            res.status(200).json(queryShapshot.docs[0].data());
-        } else {
-            res.status(404).json({ status: 'Not found!' });
+        if (snap.size > 0) {
+            return res.status(200).json(snap.docs[0].data());
         }
+        return res.status(404).json({ error: 'not_found', request_id: req.id });
     } catch (e) {
-        console.error("NOTCH ERROR", e.message);
-        res.status(400).json({"ERROR": e.message});
+        return next(e);
     }
-
-
 });
 
-router.post('/', async (req, res) => {
+router.post('/', async (req, res, next) => {
     try {
-        const email = req.body.email;
-        console.log({ status: `Getting specific shopify customer for email ${email}` });
-
+        const email = req.body && req.body.email;
+        logger.info({ request_id: req.id }, 'shopify_customer_email_search');
 
         const query = db.collection('customers').where('email', '==', email);
-        const queryShapshot = await query.get();
+        const snap = await query.get();
 
-        if (queryShapshot.size > 0) {
-            res.status(200).json(getDocuments(queryShapshot));
-        } else {
-            res.status(404).json({ status: 'Not found!' });
+        if (snap.size > 0) {
+            return res.status(200).json(getDocuments(snap));
         }
-
+        return res.status(404).json({ error: 'not_found', request_id: req.id });
     } catch (e) {
-        console.error("NOTCH ERROR", e.message);
-        res.status(400).json({"ERROR": e.message});
+        return next(e);
     }
-
-
 });
 
-router.post('/create', async (req, res) => {
+router.post('/create', async (req, res, next) => {
     try {
-        const id = req.body.id || Date.now();
-        const email = req.body.email;
-        const customerData = req.body;
-        
-        console.log({ status: `Creating new customer with email ${email} and id ${id}` });
-        
+        const id = (req.body && req.body.id) || Date.now();
+        const customerData = req.body || {};
+        req.audit && req.audit.setResource(String(id));
+        logger.info({ request_id: req.id }, 'shopify_customer_create');
+
         await db.collection('customers').doc(String(id)).set(customerData);
-        
+
         res.status(201).json({
-            action: "CUSTOMER CREATE",
+            action: 'CUSTOMER CREATE',
             success: true,
-            id: id,
-            message: "Customer created successfully"
+            id,
         });
-        
     } catch (e) {
-        console.error("NOTCH ERROR", e.message);
-        res.status(400).json({"ERROR": e.message});
+        next(e);
     }
 });
 
-// Extract documents
-function getDocuments(queryShapshot) {
-    var data = []
-    queryShapshot.forEach(doc => {
-        data.push(doc.data());
-    });
-
+function getDocuments(snapshot) {
+    const data = [];
+    snapshot.forEach((doc) => data.push(doc.data()));
     return data;
 }
 
-
-module.exports = router
+module.exports = router;
